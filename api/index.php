@@ -6,9 +6,8 @@
  * ensuring the serverless environment is correctly configured.
  */
 
-// Set the storage path to /tmp for Vercel's read-only filesystem
-// Note: We also do this in bootstrap/app.php for deeper integration
-if (env('VERCEL_JOB_ID')) {
+// Use native getenv() instead of Laravel's env() since the framework isn't loaded yet
+if (getenv('VERCEL_JOB_ID')) {
     $_ENV['APP_STORAGE'] = '/tmp/storage';
 }
 
