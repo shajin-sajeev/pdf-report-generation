@@ -15,4 +15,37 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->booting(function () {
+        if (env('VERCEL_JOB_ID')) {
+            // Ensure necessary storage directories exist in /tmp
+            $paths = [
+                '/tmp/storage/framework/views',
+                '/tmp/storage/framework/cache/data',
+                '/tmp/storage/framework/sessions',
+                '/tmp/bootstrap/cache',
+            ];
+
+            foreach ($paths as $path) {
+                if (!is_dir($path)) {
+                    mkdir($path, 0755, true);
+                }
+            }
+
+            // Set Laravel's internal paths to use /tmp
+            config(['view.compiled' => '/tmp/storage/framework/views']);
+            config(['cache.stores.file.path' => '/tmp/storage/framework/cache/data']);
+            config(['session.files' => '/tmp/storage/framework/sessions']);
+            
+            // Fallback to file drivers if database isn't configured on Vercel
+            if (!env('DB_DATABASE') && !env('DATABASE_URL')) {
+                config(['session.driver' => 'file']);
+                config(['cache.default' => 'file']);
+            }
+
+            // dompdf temp directory
+            config(['dompdf.options.tempDir' => '/tmp']);
+            config(['dompdf.options.isHtml5ParserEnabled' => true]);
+        }
+    })
+    ->create();
