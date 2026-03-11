@@ -9,30 +9,30 @@
 
         body { font-family: 'Helvetica', 'Arial', sans-serif; color: #1e293b; line-height: 1.4; font-size: 11.5px; margin: 0; padding: 0; }
         
-        .report-title { text-align: center; margin-bottom: 20px; border-bottom: 3px solid #1e3a8a; padding: 12px 0; }
-        .report-title h1 { margin: 0; font-size: 22px; font-weight: 900; color: #1e3a8a; text-transform: uppercase; letter-spacing: -0.5px; }
+        .report-title { text-align: center; margin-bottom: 20px; border-bottom: 3px solid #4f46e5; padding: 12px 0; }
+        .report-title h1 { margin: 0; font-size: 22px; font-weight: 900; color: #4f46e5; text-transform: uppercase; letter-spacing: -0.5px; }
 
-        .metadata-box { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 15px; margin-bottom: 15px; border-radius: 4px; }
+        .metadata-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 15px; margin-bottom: 15px; border-radius: 4px; }
         .metadata-box table { width: 100%; border-collapse: collapse; }
-        .metadata-box td.label { font-weight: bold; width: 150px; color: #475569; padding: 2px 0; font-size: 10px; }
-        .metadata-box td.val { color: #0f172a; padding: 2px 0; font-weight: 500; }
+        .metadata-box td.label { font-weight: bold; width: 150px; color: #64748b; padding: 2px 0; font-size: 10px; }
+        .metadata-box td.val { color: #1e293b; padding: 2px 0; font-weight: 600; }
 
-        .section-header { font-size: 11px; font-weight: 800; margin-top: 12px; margin-bottom: 6px; text-transform: uppercase; background: #e2e8f0; padding: 4px 10px; border-left: 5px solid #1e3a8a; color: #1e3a8a; }
+        .section-header { font-size: 11px; font-weight: 800; margin-top: 12px; margin-bottom: 6px; text-transform: uppercase; background: #eef2ff; padding: 4px 10px; border-left: 5px solid #4f46e5; color: #4338ca; }
         .narrative { text-align: justify; margin-bottom: 10px; color: #334155; line-height: 1.4; font-size: 11px; }
 
         /* Dynamic Tables */
         table.dynamic-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; table-layout: fixed; }
-        table.dynamic-table th { border: 1px solid #cbd5e1; padding: 3px 2px; font-weight: bold; text-align: center; font-size: 8.5px; color: #1e293b; text-transform: uppercase; }
-        table.dynamic-table td { border: 1px solid #cbd5e1; padding: 3px 2px; font-size: 9.5px; text-align: center; color: #1e293b; }
+        table.dynamic-table th { border: 1px solid #e2e8f0; padding: 3px 2px; font-weight: bold; text-align: center; font-size: 8.5px; color: #4338ca; text-transform: uppercase; background: #f8fafc; }
+        table.dynamic-table td { border: 1px solid #e2e8f0; padding: 3px 2px; font-size: 9.5px; text-align: center; color: #1e293b; }
         
         table.log-table { table-layout: fixed; margin-top: 10px; }
         
         /* Chart Section */
         .chart-block { text-align: center; margin: 15px 0; page-break-inside: avoid; }
-        .chart-block img { max-width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; }
+        .chart-block img { max-width: 100%; border: 1px solid #e2e8f0; border-radius: 4px; }
 
         .page-break { page-break-after: always; }
-        .text-releasing { color: #dc2626; font-weight: bold; }
+        .text-releasing { color: #0891b2; font-weight: bold; } /* Cyan for releasing */
         
         .signature-section { margin-top: 35px; page-break-inside: avoid; border-top: 1px solid #e2e8f0; padding-top: 20px; position: relative; height: 150px; }
         .signature-left { position: absolute; left: 0; bottom: 0; text-align: left; }
@@ -60,21 +60,11 @@
         </table>
     </div>
 
-    @if($introduction)
-        <div class="section-header">1. Introduction</div>
-        <div class="narrative">{{ $introduction }}</div>
-    @endif
-
-    @if($field_investigation)
-        <div class="section-header">2. Field Investigation</div>
-        <div class="narrative">{{ $field_investigation }}</div>
-    @endif
-
-    @if($test_procedure)
-        <div class="section-header">3. Procedure for Test</div>
-        <div class="narrative">{{ $test_procedure }}</div>
-    @endif
-
+    @foreach($narratives as $narrative)
+        <div class="section-header">{{ $narrative['title'] }}</div>
+        <div class="narrative">{{ $narrative['content'] }}</div>
+    @endforeach
+ 
     @foreach($sections as $section)
         <div class="section-header">{{ $section['title'] }}</div>
         <table class="dynamic-table">
@@ -176,10 +166,6 @@
         <img src="{{ $chartUrl }}" style="width: 100%; height: auto;" alt="Analysis Curve">
     </div>
 
-    @if($conclusion)
-        <div class="section-header">CONCLUSION</div>
-        <div class="narrative">{{ $conclusion }}</div>
-    @endif
 
     @if($signature || $seal)
         <div class="signature-section">

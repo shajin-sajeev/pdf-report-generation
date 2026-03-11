@@ -8,7 +8,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReportController extends Controller
 {
-    public function index()
+    public function showUpload()
     {
         return view('reports.upload');
     }
@@ -20,34 +20,35 @@ class ReportController extends Controller
             'title'    => 'required|string',
             'project'  => 'required|string',
             'client'   => 'required|string',
-            'contractor' => 'nullable|string',
+            'test_type'  => 'required|string',
             'sections' => 'nullable|array',
+            'narratives' => 'nullable|array',
             'signature_image' => 'nullable|image|max:2048',
             'seal_image' => 'nullable|image|max:2048',
         ]);
-
+ 
         // Process Signature Image to Base64
         $signatureBase64 = null;
         if ($request->hasFile('signature_image')) {
             $image = $request->file('signature_image');
             $signatureBase64 = 'data:' . $image->getMimeType() . ';base64,' . base64_encode(file_get_contents($image->getRealPath()));
         }
-
+ 
         // Process Seal Image to Base64
         $sealBase64 = null;
         if ($request->hasFile('seal_image')) {
             $image = $request->file('seal_image');
             $sealBase64 = 'data:' . $image->getMimeType() . ';base64,' . base64_encode(file_get_contents($image->getRealPath()));
         }
-
+ 
         $csvFile = $request->file('data_csv');
         $csv = Reader::createFromPath($csvFile->getRealPath(), 'r');
         $csv->setHeaderOffset(0);
-
+ 
         $mainData = [];
         $releasingData = [];
         $isReleasingMode = false;
-
+ 
         foreach ($csv as $record) {
             $remark = '';
             $timeVal = '';
@@ -81,21 +82,21 @@ class ReportController extends Controller
                 'average'    => $this->findVal($record, ['average', 'settlement']),
                 'remarks'    => $this->findVal($record, ['remark', 'remarks']),
             ];
-
+ 
             if (str_contains($remark, 'releasing')) {
                 $isReleasingMode = true;
                 continue; 
             }
-
+ 
             if ($isReleasingMode) {
                 $releasingData[] = $normRecord;
             } else {
                 $mainData[] = $normRecord;
             }
         }
-
+ 
         $chartUrl = $this->generateChartUrl($mainData, $releasingData);
-
+ 
         // Pass everything to the view, including the nested sections array
         $pdfData = array_merge($request->all(), [
             'mainData'      => $mainData,
@@ -103,6 +104,7 @@ class ReportController extends Controller
             'chartUrl'      => $chartUrl,
             'reportDate'    => now()->format('d F Y'),
             'sections'      => $request->input('sections', []),
+            'narratives'    => $request->input('narratives', []),
             'signature'     => $signatureBase64,
             'seal'          => $sealBase64
         ]);
@@ -182,24 +184,24 @@ class ReportController extends Controller
                     [
                         'label' => 'Average Settlement',
                         'data' => array_map(fn($l, $v) => ['x' => $l, 'y' => $v], $mainLoads, $mainSets),
-                        'borderColor' => '#3b82f6',
+                        'borderColor' => '#4f46e5',
                         'backgroundColor' => 'transparent',
-                        'borderWidth' => 2,
-                        'pointRadius' => 4,
-                        'pointBackgroundColor' => '#3b82f6',
+                        'borderWidth' => 3,
+                        'pointRadius' => 5,
+                        'pointBackgroundColor' => '#4f46e5',
                         'fill' => false,
-                        'datalabels' => ['align' => 'top', 'anchor' => 'end', 'color' => '#3b82f6', 'font' => ['size' => 8]]
+                        'datalabels' => ['align' => 'top', 'anchor' => 'end', 'color' => '#4f46e5', 'font' => ['size' => 10, 'weight' => 'bold']]
                     ],
                     [
                         'label' => 'Release',
                         'data' => array_map(fn($l, $v) => ['x' => $l, 'y' => $v], $releaseLoads, $releaseSets),
-                        'borderColor' => '#ef4444',
+                        'borderColor' => '#06b6d4',
                         'backgroundColor' => 'transparent',
-                        'borderWidth' => 2,
-                        'pointRadius' => 4,
-                        'pointBackgroundColor' => '#ef4444',
+                        'borderWidth' => 3,
+                        'pointRadius' => 5,
+                        'pointBackgroundColor' => '#06b6d4',
                         'fill' => false,
-                        'datalabels' => ['align' => 'bottom', 'anchor' => 'start', 'color' => '#ef4444', 'font' => ['size' => 8]]
+                        'datalabels' => ['align' => 'bottom', 'anchor' => 'start', 'color' => '#06b6d4', 'font' => ['size' => 10, 'weight' => 'bold']]
                     ]
                 ]
             ],
